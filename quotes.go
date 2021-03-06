@@ -69,7 +69,7 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", myquotes.Handler)
+	router.HandleFunc("/", myquotes.Handler).Methods("GET", "OPTIONS")
 
 	port := os.Getenv("PORT")
 	if port == "" {
