@@ -8,46 +8,68 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-type Quotes struct {
+type singleQuote struct {
 	Quote  string
 	Author string
 }
 
-var quotacoes = map[string]Quotes{}
+type quotes struct {
+	quotacoes []singleQuote
+}
+
+func (x *quotes) Handler(w http.ResponseWriter, r *http.Request) {
+	var jsonResponse []byte
+
+	randomQuote := rand.Intn(len(x.quotacoes))
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Printf("Returning: %v\n", x.quotacoes[randomQuote])
+
+	jsonResponse, err := json.Marshal(x.quotacoes[randomQuote])
+
+	if err != nil {
+		log.Printf("Error Marshalling: %v", err)
+	}
+
+	w.Write(jsonResponse)
+}
+
+func (x *quotes) load(fname string) error {
+	records, err := readData(fname)
+
+	if err != nil {
+		return err
+	}
+
+	for _, r := range records {
+		record := singleQuote{
+			Quote:  r[0],
+			Author: r[1],
+		}
+
+		x.quotacoes = append(x.quotacoes, record)
+
+		fmt.Printf("%v\n", record)
+		fmt.Printf(("=>==========================================================================================\n"))
+
+	}
+
+	return nil
+}
 
 func main() {
 
-	records, err := readData("quotes.csv")
+	myquotes := &quotes{}
 
-	var i int = 0
-
-	if err != nil {
+	if err := myquotes.load("quotes.csv"); err != nil {
 		log.Fatal(err)
 	}
 
-	for _, record := range records {
-		record := Quotes{
-			Quote:  record[0],
-			Author: record[1],
-		}
-
-		quotacoes[strconv.Itoa(i)] = record
-
-		fmt.Printf("%v\n", quotacoes[strconv.Itoa(i)])
-		fmt.Printf(("=>==========================================================================================\n"))
-
-		i++
-	}
-
-	fmt.Printf("Processed %d quotes\n", i)
-
 	router := mux.NewRouter()
-	router.HandleFunc("/", quotesHandler)
+	router.HandleFunc("/", myquotes.Handler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -83,21 +105,4 @@ func readData(fileName string) ([][]string, error) {
 	}
 
 	return records, nil
-}
-
-func quotesHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var jsonResponse []byte
-
-	var randomQuote = rand.Intn(16)
-
-	fmt.Printf("Returning: %v\n", quotacoes[strconv.Itoa(randomQuote)])
-
-	jsonResponse, err := json.Marshal(quotacoes[strconv.Itoa(randomQuote)])
-
-	if err != nil {
-		log.Printf("Error Marshalling: %v", err)
-	}
-
-	w.Write(jsonResponse)
 }
