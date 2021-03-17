@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -26,6 +27,7 @@ func (x *quotes) Handler(w http.ResponseWriter, r *http.Request) {
 
 	randomQuote := rand.Intn(len(x.quotacoes))
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Printf("Returning: %v\n", x.quotacoes[randomQuote])
 
 	jsonResponse, err := json.Marshal(x.quotacoes[randomQuote])
@@ -79,7 +81,9 @@ func main() {
 		log.Printf("Listening on port# %s", port)
 	}
 
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	corsObj := handlers.AllowedOrigins([]string{"*"})
+
+	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(corsObj)(router)))
 }
 
 func readData(fileName string) ([][]string, error) {
