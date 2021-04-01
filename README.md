@@ -20,7 +20,7 @@ Please note that sample Quotes csv file contains a list of quotes in Portuguese.
 
 [Install Go](https://golang.org/doc/install)
 
-## How dows it work?
+## How does it work?
 
 Build the code
 
