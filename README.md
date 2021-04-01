@@ -31,7 +31,7 @@ go build
 Run the program
 
 ```
-./Quotes
+./quotes
 ```
 
 Basic test
@@ -57,6 +57,6 @@ Copy and use as you wish.
 
 ## Thank you
 
-* Go Language creators
+* [Go Language creators](https://en.wikipedia.org/wiki/Go_(programming_language))
 * To [Marco Paganini](https://github.com/marcopaganini) for his guidance
 
