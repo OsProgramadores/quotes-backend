@@ -1,16 +1,15 @@
 package main
 
 import (
-	"encoding/csv"
+	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type singleQuote struct {
@@ -18,19 +17,40 @@ type singleQuote struct {
 	Author string
 }
 
-type quotes struct {
-	quotacoes []singleQuote
-}
-
-func (x *quotes) Handler(w http.ResponseWriter, r *http.Request) {
+func Handler(w http.ResponseWriter, r *http.Request) {
 	var jsonResponse []byte
 
-	randomQuote := rand.Intn(len(x.quotacoes))
+	myQuote := singleQuote{}
+	lang := 0
+
+	//retrieves random quote from table quotes on sqlite database.
+
+	db, err := sql.Open("sqlite3", "./quotesqlite")
+	if err != nil {
+		log.Printf("Error opening database: %v", err)
+	}
+
+	rows, err := db.Query("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
+	if err != nil {
+		log.Printf("Error executing query: %v", err)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&lang, &myQuote.Quote, &myQuote.Author)
+	}
+
+	//todo  - add err check here
+
+	rows.Close()
+
+	db.Close()
+
+	// sets headers, marshalls and returns quote + author JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Printf("Returning: %v\n", x.quotacoes[randomQuote])
+	log.Printf("Returning: %v\n", myQuote)
 
-	jsonResponse, err := json.Marshal(x.quotacoes[randomQuote])
+	jsonResponse, err = json.Marshal(myQuote)
 
 	if err != nil {
 		log.Printf("Error Marshalling: %v", err)
@@ -39,39 +59,10 @@ func (x *quotes) Handler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func (x *quotes) load(fname string) error {
-	records, err := readData(fname)
-
-	if err != nil {
-		return err
-	}
-
-	for _, r := range records {
-		record := singleQuote{
-			Quote:  r[0],
-			Author: r[1],
-		}
-
-		x.quotacoes = append(x.quotacoes, record)
-
-		fmt.Printf("%v\n", record)
-		fmt.Printf(("=>==========================================================================================\n"))
-
-	}
-
-	return nil
-}
-
 func main() {
 
-	myquotes := &quotes{}
-
-	if err := myquotes.load("quotes.csv"); err != nil {
-		log.Fatal(err)
-	}
-
 	router := mux.NewRouter()
-	router.HandleFunc("/", myquotes.Handler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/", Handler).Methods("GET", "OPTIONS")
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -84,29 +75,4 @@ func main() {
 	corsObj := handlers.AllowedOrigins([]string{"*"})
 
 	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(corsObj)(router)))
-}
-
-func readData(fileName string) ([][]string, error) {
-
-	f, err := os.Open(fileName)
-
-	if err != nil {
-		return [][]string{}, err
-	}
-	defer f.Close()
-
-	r := csv.NewReader(f)
-
-	// skip first line
-	if _, err := r.Read(); err != nil {
-		return [][]string{}, err
-	}
-
-	records, err := r.ReadAll()
-
-	if err != nil {
-		return [][]string{}, err
-	}
-
-	return records, nil
 }
