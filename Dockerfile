@@ -1,13 +1,18 @@
-## We specify the base image we need for our go application
-FROM golang:latest
-## We create an /app directory within our image that will hold our application source files
+## Will use alpine linux for base image
+FROM alpine:3.7
+MAINTAINER Marcelo Pinheiro <mpinheir@gmail.com>
+## Uses alpine package manager to install go, git and g++ packages - note sqllite needs g++
+RUN apk add go git g++
+## Creates an /app directory within the image to hold application source files
 RUN mkdir /app
-## We copy everything in the root directory into our /app directory
+## Copies everything in the root directory into tje /app directory
 ADD . /app
-## We specify that we now wish to execute any further commands inside our /app directory
+## Specifies base /app directory
 WORKDIR /app
-## we run go build to compile the binary executable of our Go program
-## GCO_ENABLED=1 é devido ao sqllite
+## Downloads dependencies
+RUN go get -d -v
+## builds go app
+## GCO_ENABLED=1 is due to sqllite
 RUN CGO_ENABLED=1 go build -o quotes
-## Our start command which kicks off our newly created binary executable
+## Defines start command which kicks off newly created binary executable
 CMD ["/app/quotes"]
