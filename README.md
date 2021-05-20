@@ -4,7 +4,7 @@
 
 This code implements a back end that returns a JSON file containing a random inspirational quote and the respective author.
 
-The quotes are stored in a simple text file that is read by the program as it starts.
+The quotes are stored in a sqllite database.
 
 The following data is returned to the API consumer:
 
@@ -13,7 +13,7 @@ Quote
 Author
 ```
 
-Please note that sample Quotes csv file contains a list of quotes in Portuguese. You are welcome to adjust to your language as needed.
+Please note that the sample Quotes database file contains a list of quotes in Portuguese. You are welcome to adjust to your language as needed.
 
 
 ## Prerequisites
