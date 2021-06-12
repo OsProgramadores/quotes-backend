@@ -27,19 +27,21 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	db, err := sql.Open("sqlite3", "./quotesqlite")
 	if err != nil {
-		log.Printf("Error opening database: %v", err)
+		log.Fatal("Error opening database: ", err)
 	}
 
 	rows, err := db.Query("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
 	if err != nil {
-		log.Printf("Error executing query: %v", err)
+		log.Fatal("Error executing query: ", err)
 	}
 
 	for rows.Next() {
 		err = rows.Scan(&lang, &myQuote.Quote, &myQuote.Author)
 	}
 
-	//todo  - add err check here
+	if err != nil {
+		log.Fatal("Error, no data returned from query: ", err)
+	}
 
 	rows.Close()
 
@@ -48,15 +50,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// sets headers, marshalls and returns quote + author JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	log.Printf("Returning: %v\n", myQuote)
 
 	jsonResponse, err = json.Marshal(myQuote)
 
 	if err != nil {
-		log.Printf("Error Marshalling: %v", err)
+		log.Fatal("Error Marshalling: ", err)
 	}
 
 	w.Write(jsonResponse)
+	log.Printf("Returned: %v\n", myQuote)
 }
 
 func main() {
