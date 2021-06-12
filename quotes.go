@@ -17,31 +17,30 @@ type singleQuote struct {
 	Author string
 }
 
+func checkError(message string, err error) {
+	if err != nil {
+		log.Fatal(message, err)
+	}
+}
+
 func Handler(w http.ResponseWriter, r *http.Request) {
 	var jsonResponse []byte
 
 	myQuote := singleQuote{}
 	lang := 0
 
-	//retrieves random quote from table quotes on sqlite database.
+	//retrieves random quote from sqlite database table quotes.
 
 	db, err := sql.Open("sqlite3", "./quotesqlite")
-	if err != nil {
-		log.Fatal("Error opening database: ", err)
-	}
+	checkError("Error opening database: ", err)
 
 	rows, err := db.Query("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
-	if err != nil {
-		log.Fatal("Error executing query: ", err)
-	}
+	checkError("Error executing query: ", err)
 
 	for rows.Next() {
 		err = rows.Scan(&lang, &myQuote.Quote, &myQuote.Author)
 	}
-
-	if err != nil {
-		log.Fatal("Error, no data returned from query: ", err)
-	}
+	checkError("Error, no data returned from query: ", err)
 
 	rows.Close()
 
@@ -52,10 +51,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	jsonResponse, err = json.Marshal(myQuote)
-
-	if err != nil {
-		log.Fatal("Error Marshalling: ", err)
-	}
+	checkError("Error Marshalling: ", err)
 
 	w.Write(jsonResponse)
 	log.Printf("Returned: %v\n", myQuote)
