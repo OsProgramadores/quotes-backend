@@ -12,9 +12,12 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Quote struture definition
-// Quote == quote text
-// Author == quote author
+/*
+   Quote struture definition
+   Quote  == quote text
+   Author == quote author
+*/
+
 type singleQuote struct {
 	Quote  string
 	Author string
@@ -27,7 +30,7 @@ func checkError(message string, err error) {
 	}
 }
 
-// Checks if database sqlote file exists and aborts program if not
+// Checks if sqlite database file exists and aborts program if not
 func checkIfDabaseExists() {
 	log.Printf("Checking if Database exists...")
 	_, err := os.Stat("./quotesqlite")
@@ -37,17 +40,11 @@ func checkIfDabaseExists() {
 	log.Printf("Database ok.")
 }
 
-// Http handler
-func Handler(w http.ResponseWriter, r *http.Request) {
-	var jsonResponse []byte
-
+// Retrieves random quote from sqlite database table quotes
+func readRandomQuote() singleQuote {
 	myQuote := singleQuote{}
 	lang := 0
 
-	//checks if database file exists
-	checkIfDabaseExists()
-
-	//retrieves random quote from sqlite database table quotes.
 	db, err := sql.Open("sqlite3", "./quotesqlite")
 	checkError("Error opening database: ", err)
 
@@ -62,12 +59,20 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 
 	db.Close()
+	return (myQuote)
+
+}
+
+// Http handler
+func Handler(w http.ResponseWriter, r *http.Request) {
+	// retrieves random quote from sqlite database table quotes
+	myQuote := readRandomQuote()
 
 	// sets headers, marshalls and returns quote + author JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	jsonResponse, err = json.Marshal(myQuote)
+	jsonResponse, err := json.Marshal(myQuote)
 	checkError("Error Marshalling: ", err)
 
 	w.Write(jsonResponse)
@@ -75,6 +80,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// checks if database file exists and aborts app if it does not
+	checkIfDabaseExists()
+
+	// defines http handler and sets listener on port 8080 unless PORT environent variable is defined
 	router := mux.NewRouter()
 	router.HandleFunc("/", Handler).Methods("GET", "OPTIONS")
 
