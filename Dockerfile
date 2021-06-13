@@ -1,6 +1,6 @@
 ## Will use alpine linux for base image
 FROM alpine:3.7 AS builder
-MAINTAINER Marcelo Pinheiro <mpinheir@gmail.com>
+LABEL author="mpinheir@gmail.com"
 
 ## Uses alpine package manager to install go, git and g++ packages - note sqllite needs g++
 RUN apk add go git g++

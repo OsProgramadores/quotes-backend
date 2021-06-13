@@ -12,25 +12,42 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Quote struture definition
+// Quote == quote text
+// Author == quote author
 type singleQuote struct {
 	Quote  string
 	Author string
 }
 
+// Checks for fatal error and displays error message and abort program if applicable
 func checkError(message string, err error) {
 	if err != nil {
 		log.Fatal(message, err)
 	}
 }
 
+// Checks if database sqlote file exists and aborts program if not
+func checkIfDabaseExists() {
+	log.Printf("Checking if Database exists...")
+	_, err := os.Stat("./quotesqlite")
+	if os.IsNotExist(err) {
+		checkError("Database not found: ", err)
+	}
+	log.Printf("Database ok.")
+}
+
+// Http handler
 func Handler(w http.ResponseWriter, r *http.Request) {
 	var jsonResponse []byte
 
 	myQuote := singleQuote{}
 	lang := 0
 
-	//retrieves random quote from sqlite database table quotes.
+	//checks if database file exists
+	checkIfDabaseExists()
 
+	//retrieves random quote from sqlite database table quotes.
 	db, err := sql.Open("sqlite3", "./quotesqlite")
 	checkError("Error opening database: ", err)
 
@@ -58,7 +75,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	router := mux.NewRouter()
 	router.HandleFunc("/", Handler).Methods("GET", "OPTIONS")
 
