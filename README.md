@@ -46,6 +46,26 @@ Expected result
 {"Quote":"Random quote.","Author":"Random Quote Author"}
 ```
 
+## Running as a Docker container
+The following scripts have been created for your convenience
+build.sh
+start.sh
+stop.sh
+use chdmod +x scrip_name to ensure that the scripts can execute
+
+**build image**
+./build.sh
+
+**start container**
+./start.sh
+
+**stop container**
+./stop.sh
+
+**testing container app
+curl localhost:8080/  or acess localhost:8080 on your favourite web browser
+
+
 
 ## Author
 
