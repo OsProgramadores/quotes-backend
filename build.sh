@@ -1,1 +1,1 @@
-sudo docker build -t quotes-app .
+docker build -t quotes-app .
