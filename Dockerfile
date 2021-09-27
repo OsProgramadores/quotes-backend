@@ -30,5 +30,8 @@ WORKDIR /app
 COPY --from=builder /app/quotes .
 COPY --from=builder /app/quotesqlite .
 
+# Expose port 8080
+EXPOSE 8080:8080
+
 ## Defines start command which kicks off newly created binary executable
 CMD ["/app/quotes"]

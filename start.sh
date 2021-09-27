@@ -1,1 +1,1 @@
-docker run -d -p 8080:8080 --name quotes quotes-app
+docker run -d --name quotes quotes-app

@@ -63,7 +63,7 @@ func readRandomQuote() singleQuote {
 
 }
 
-// Http handler
+// Get quote handler
 func Handler(w http.ResponseWriter, r *http.Request) {
 	// retrieves random quote from sqlite database table quotes
 	myQuote := readRandomQuote()
@@ -79,14 +79,33 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Returned: %v\n", myQuote)
 }
 
+// Create quote handler
+func CreateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Created: %v\n", "sample author,sample quote")
+}
+
+// Update quote handler
+func UpdateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Updated: %v\n", "sample author,sample quote")
+}
+
+// Delete quote handler
+func DeleteHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Deleted: %v\n", "sample author,sample quote")
+}
+
 func main() {
 	// checks if database file exists and aborts app if it does not
 	checkIfDabaseExists()
 
-	// defines http handler and sets listener on port 8080 unless PORT environent variable is defined
+	// defines routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", Handler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/create", CreateHandler).Methods("POST", "OPTIONS")
+	router.HandleFunc("/update", UpdateHandler).Methods("PUT", "OPTIONS")
+	router.HandleFunc("/delete", DeleteHandler).Methods("DELETE", "OPTIONS")
 
+	//sets listener on port 8080 unless PORT environent variable is defined
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
