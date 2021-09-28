@@ -81,7 +81,24 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 // Create quote handler
 func CreateHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Created: %v\n", "sample author,sample quote")
+	db, err := sql.Open("sqlite3", "./quotesqlite")
+	checkError("Error opening database: ", err)
+	defer db.Close()
+
+	// Processes parameters received through http.Request
+	author := r.FormValue("author")
+	quote := r.FormValue("quote")
+	log.Printf("Created: %v => %v\n ", author, quote)
+
+	// Saves new quote to database
+	stmt, err := db.Prepare(`
+		INSERT INTO quotes(idiom, quote, author)
+		VALUES(?, ?, ?)
+	`)
+	checkError("Prepare query error: ", err)
+
+	_, err = stmt.Exec(1, quote, author)
+	checkError("Execute query error: ", err)
 }
 
 // Update quote handler
