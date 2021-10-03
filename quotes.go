@@ -43,16 +43,17 @@ func checkIfDabaseExists() {
 // Retrieves random quote from sqlite database table quotes
 func readRandomQuote() singleQuote {
 	myQuote := singleQuote{}
-	lang := 0
+	//lang := 0
+	quoteID := ""
 
 	db, err := sql.Open("sqlite3", "./quotesqlite")
 	checkError("Error opening database: ", err)
 
-	rows, err := db.Query("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
+	rows, err := db.Query("SELECT quotes.quote_id, quotes.quote, authors.author_name FROM quotes INNER JOIN authors ON quotes.author_id = authors.author_id ORDER BY RANDOM() LIMIT 1")
 	checkError("Error executing query: ", err)
 
 	for rows.Next() {
-		err = rows.Scan(&lang, &myQuote.Quote, &myQuote.Author)
+		err = rows.Scan(&quoteID, &myQuote.Quote, &myQuote.Author)
 	}
 	checkError("Error, no data returned from query: ", err)
 
