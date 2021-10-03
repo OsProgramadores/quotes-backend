@@ -89,7 +89,6 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	// Processes parameters received through http.Request
 	author := r.FormValue("author")
 	quote := r.FormValue("quote")
-	log.Printf("Created: %v => %v\n ", author, quote)
 
 	// Saves new quote to database
 	stmt, err := db.Prepare(`
@@ -100,6 +99,8 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = stmt.Exec(1, quote, author)
 	checkError("Execute query error: ", err)
+
+	log.Printf("Created: %v => %v\n ", author, quote)
 }
 
 // Update quote handler
@@ -109,7 +110,24 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 // Delete quote handler
 func DeleteHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Deleted: %v\n", "sample author,sample quote")
+	db, err := sql.Open("sqlite3", "./quotesqlite")
+	checkError("Error opening database: ", err)
+	defer db.Close()
+
+	// Processes parameters received through http.Request
+	quoteID := r.FormValue("quoteid")
+
+	// Saves new quote to database
+	stmt, err := db.Prepare("DELETE FROM quotes WHERE quote_id = ?")
+	checkError("Prepare query error: ", err)
+
+	res, err := stmt.Exec(quoteID)
+	checkError("Execute query error: ", err)
+
+	_, err = res.RowsAffected()
+	checkError("Error deleting quotes' record: ", err)
+
+	log.Printf("Deleted QuoteId: %v\n", quoteID)
 }
 
 func main() {
